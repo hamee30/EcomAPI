@@ -12,6 +12,7 @@ using System.Collections.Concurrent;
 using System.Data.Entity;
 using System.Net.Http;
 using System.Web;
+using Ecommerce.Models;
 
 namespace TokenAuthentication.Provider
 {
@@ -29,13 +30,124 @@ namespace TokenAuthentication.Provider
 
             context.OwinContext.Response.Headers.Add("Access-Control-Allow-Origin", new[] { "*" });
 
-            
-            /*var identity1 = new ClaimsIdentity(context.Options.AuthenticationType);
-            identity1.AddClaim(new Claim("sub", context.UserName));
-            identity1.AddClaim(new Claim(ClaimTypes.Role, "user"));
+            using (var db = new EcommEntities())
+            {
+                if (db != null)
+                {
+                    int user_type = 0;
+                    string err = "Provided username and password is incorrect";
+                    string code = "1";
+                    string userid = "";
+                    string pushid = "";
+                    userid = context.UserName;
+                    if (context.UserName.Contains("-pushid"))
+                    {
+                        userid = context.UserName.Substring(0, context.UserName.LastIndexOf("-pushid"));
+                        pushid = context.UserName.Substring(context.UserName.LastIndexOf("-pushid") + 7);
+                    }
+                    var user = db.user_details.ToList();
+                    user_type = (int)user.Where(a => a.email.Trim().ToLower() == userid.Trim().ToLower()).Select(a => a.user_type).Single();
+                    try
+                    {
+                        if (user != null)
+                        {
+                            if (user_type == 20000)
+                            {
+                                if (!string.IsNullOrEmpty(user.Where(u => (string.Equals(u.email.Trim(), userid.Trim(), StringComparison.OrdinalIgnoreCase)) && u.password == context.Password).FirstOrDefault().email))
+                                {
+                                    var login1 = db.user_details.Where(a => a.email.Trim().ToLower() == userid.Trim().ToLower());
+                                    //foreach (user_details uf in login1)
+                                    //{
+                                    //    uf.user_status = 1;
+                                    //    //uf.Push_id = pushid;  
+                                    //}
+                                    //db.SaveChanges();
 
-            context.Validated(identity1);*/
-        }
+
+                                    identity.AddClaim(new Claim(ClaimTypes.Role, userid));
+
+                                    var props = new AuthenticationProperties(new Dictionary<string, string>
+                                    {
+                                        {
+                                            "userdisplayname", userid
+                                        },
+                                        {
+                                             "role", "admin"
+                                        }
+                                     });
+
+                                    var ticket = new AuthenticationTicket(identity, props);
+                                    context.Validated(ticket);
+                                    context.Validated(identity);
+                                }
+                            }
+                            else if (user_type != 20000)
+                            {
+
+                                if (!string.IsNullOrEmpty(user.Where(u => (string.Equals(u.email.Trim(), userid.Trim(), StringComparison.OrdinalIgnoreCase)) && u.password == context.Password && u.user_status == 1 ).FirstOrDefault().email))
+                                {
+                                    var login1 = db.user_details.Where(a => a.email.Trim().ToLower() == userid.Trim().ToLower());
+                                    //foreach (User_Info uf in login1)
+                                    //{
+                                    //    uf.User_status = 1;
+                                    //    if (pushid != null && pushid != "")
+                                    //        uf.Push_id = pushid;
+                                    //}
+                                    //db.SaveChanges();
+
+
+                                    identity.AddClaim(new Claim(ClaimTypes.Role, userid));
+
+                                    var props = new AuthenticationProperties(new Dictionary<string, string>
+                                        {
+                                            {
+                                                "userdisplayname", userid
+                                            },
+                                            {
+                                                 "role", "admin"
+                                            }
+                                         });
+
+                                    var ticket = new AuthenticationTicket(identity, props);
+                                    context.Validated(ticket);
+                                    context.Validated(identity);
+                                }
+                            }
+
+                            else
+                            {
+                                context.SetError("invalid_grant", "Provided username and password is incorrect");
+
+                                context.Rejected();
+
+                            }
+
+                        }
+
+                        }
+                    catch (System.Exception e)
+                    {
+                        context.SetError(code, err);
+
+                        //return e;//Response.status(Response.Status.UNAUTHORIZED).build();
+                    }
+
+                }
+                else
+                {
+                    context.SetError("invalid_grant", "Provided username and password is incorrect");
+                    context.Rejected();
+                }
+
+
+            }
+
+                /*var identity1 = new ClaimsIdentity(context.Options.AuthenticationType);
+                identity1.AddClaim(new Claim("sub", context.UserName));
+                identity1.AddClaim(new Claim(ClaimTypes.Role, "user"));
+
+                context.Validated(identity1);*/
+            }
     }
 
     public class RefreshTokenProvider : IAuthenticationTokenProvider

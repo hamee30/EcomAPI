@@ -12,30 +12,30 @@ namespace Ecommerce.Controllers
     public class CategoryController : ApiController
     {
 
-        ecommEntities context = new ecommEntities();
+     //   ecommEntities context = new ecommEntities();
 
         [System.Web.Http.HttpGet]
         [System.Web.Http.Route("api/Category/GetCategoryList")]
         public JObject GetCategoryList()
         {
-            JObject details;
-            JArray usr = new JArray();
-            var emailList = context.Categories.AsNoTracking();
-            int i = 1;
-            foreach (Category bk in emailList)
-            {
-                details = new JObject(
-                   new JProperty("s_no", i++),
-                   new JProperty("Id", bk.Id),
-                   new JProperty("Name", bk.category_name)
-                  );
+            //JObject details;
+            //JArray usr = new JArray();
+            //var emailList = context.Categories.AsNoTracking();
+            //int i = 1;
+            //foreach (Category bk in emailList)
+            //{
+            //    details = new JObject(
+            //       new JProperty("s_no", i++),
+            //       new JProperty("Id", bk.Id),
+            //       new JProperty("Name", bk.category_name)
+            //      );
 
-                usr.Add(details);
+            //    usr.Add(details);
 
-            }
+            //}
 
             JObject final = new JObject(
-              new JProperty("CategoryList", usr));
+              new JProperty("CategoryList", ""));
             return final;
 
 

@@ -12,14 +12,15 @@ namespace Ecommerce.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class Category
+    public partial class user_details
     {
-        public int Id { get; set; }
-        public string category_name { get; set; }
-        public string category_slug { get; set; }
-        public Nullable<int> parent_category { get; set; }
-        public Nullable<int> status { get; set; }
-        public Nullable<System.DateTime> created_at { get; set; }
-        public Nullable<System.DateTime> updated_at { get; set; }
+        public decimal user_id { get; set; }
+        public string fname { get; set; }
+        public string lname { get; set; }
+        public string email { get; set; }
+        public string password { get; set; }
+        public string address { get; set; }
+        public Nullable<int> user_type { get; set; }
+        public Nullable<int> user_status { get; set; }
     }
 }
